@@ -1,0 +1,23 @@
+{
+  "name": "raydium-swap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@raydium-io/raydium-sdk": "^1.3.1-beta.47",
+    "@solana/web3.js": "^1.89.0",
+    "assert": "^2.1.0",
+    "axios": "^1.6.5",
+    "bs58": "^5.0.0",
+    "dotenv": "^16.3.1",
+    "javascript-obfuscator": "^4.1.0",
+    "sqlite3": "^5.1.7",
+    "ws": "^8.16.0"
+  }
+}
