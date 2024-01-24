@@ -7,6 +7,7 @@ const {
   SPL_MINT_LAYOUT,
   jsonInfo2PoolKeys,
 } = require("@raydium-io/raydium-sdk");
+
 const assert = require("assert");
 const { PublicKey } = require("@solana/web3.js");
 const { connection } = require("./config");
@@ -16,16 +17,28 @@ const makeTxVersion = TxVersion.V0;
 
 async function formatAmmKeysById(id) {
   const account = await connection.getAccountInfo(new PublicKey(id));
-  if (account === null) throw Error(" get id info error ");
+
+  if (account === null) {
+    throw Error("Error: Unable to get ID information");
+  }
+
   const info = LIQUIDITY_STATE_LAYOUT_V4.decode(account.data);
   const marketId = info.marketId;
   const marketAccount = await connection.getAccountInfo(marketId);
-  if (marketAccount === null) throw Error(" get market info error");
+
+  if (marketAccount === null) {
+    throw Error("Error: Unable to get market information");
+  }
+
   const marketInfo = MARKET_STATE_LAYOUT_V3.decode(marketAccount.data);
 
   const lpMint = info.lpMint;
   const lpMintAccount = await connection.getAccountInfo(lpMint);
-  if (lpMintAccount === null) throw Error(" get lp mint info error");
+
+  if (lpMintAccount === null) {
+    throw Error("Error: Unable to get LP mint information");
+  }
+
   const lpMintInfo = SPL_MINT_LAYOUT.decode(lpMintAccount.data);
 
   return {
@@ -65,20 +78,21 @@ async function formatAmmKeysById(id) {
 
 async function swapOnlyAmm(input) {
   try {
-    // -------- pre-action: get pool info --------
+    // -------- Pre-action: Get pool info --------
     const targetPoolInfo = await formatAmmKeysById(input.targetPool);
-    assert(targetPoolInfo, "cannot find the target pool");
+    assert(targetPoolInfo, "Error: Unable to find the target pool");
     const poolKeys = jsonInfo2PoolKeys(targetPoolInfo);
-    // -------- step 1: coumpute amount out --------
+
+    // -------- Step 1: Compute amount out --------
     const { amountOut, minAmountOut } = Liquidity.computeAmountOut({
-      poolKeys: poolKeys,
+      poolKeys,
       poolInfo: await Liquidity.fetchInfo({ connection, poolKeys }),
       amountIn: input.inputTokenAmount,
       currencyOut: input.outputToken,
-      slippage: input.slippage,
+      slippage: input.slippage, // To be decided
     });
 
-    // -------- step 2: create instructions by SDK function --------
+    // -------- Step 2: Create instructions using SDK function --------
     const { innerTransactions } = await Liquidity.makeSwapInstructionSimple({
       connection,
       poolKeys,
@@ -93,9 +107,9 @@ async function swapOnlyAmm(input) {
     });
 
     console.log(
-      "amountOut:",
+      "Amount Out:",
       amountOut.toFixed(),
-      "  minAmountOut: ",
+      "Min Amount Out: ",
       minAmountOut.toFixed()
     );
 
